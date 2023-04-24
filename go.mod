@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/gofiber/fiber/v2 v2.44.0
 	github.com/johnfercher/maroto v0.41.0
+	github.com/karmdip-mi/go-fitz v0.0.0-20210702102225-a530a79566e9
 )
 
 require (

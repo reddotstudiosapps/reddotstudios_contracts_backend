@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/viggneshvn/reddotstudios_contracts_backend/internal/imagecreator"
 	"github.com/viggneshvn/reddotstudios_contracts_backend/internal/pdfcreator"
 
 	"github.com/viggneshvn/reddotstudios_contracts_backend/internal/contract"
@@ -28,12 +29,19 @@ func NewContractHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	_ = pdfcreator.CreateContractsPage(&contract)
-	_ = pdfcreator.CreateTermsPage(&contract)
+	contractsFileName := pdfcreator.CreateContractsPage(&contract)
+	termsFileName := pdfcreator.CreateTermsPage(&contract)
 	log.Printf("Pdfs have been created successfully")
+
+	imagecreator.ImageCreator(imagecreator.Contract, contractsFileName)
+	imagecreator.ImageCreator(imagecreator.Terms, termsFileName)
+	log.Printf("Images have been created successfully")
 
 	pdfcreator.CleanUpPdfs()
 	log.Printf("Pdfs cleaned up successfully")
+
+	imagecreator.CleanUpImages()
+	log.Printf("Images cleaned up successfully")
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Contract created successfully",
