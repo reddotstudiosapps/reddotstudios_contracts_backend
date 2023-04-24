@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -59,18 +58,8 @@ func NewContractHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	jsonData, err := json.Marshal(contract)
-	if err != nil {
-		fmt.Println("Error converting struct to JSON:", err)
-		return err
-	}
-
-	jsonString := string(jsonData)
-	fmt.Println("JSON string:", jsonString)
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Contract created successfully",
-		"data":    contract,
 	})
 }
 
