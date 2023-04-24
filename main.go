@@ -82,7 +82,7 @@ func main() {
 	app.Use(logger.New())
 
 	config := cors.Config{
-		AllowOrigins:     "http://localhost:3000",
+		AllowOrigins:     "http://localhost:3000,https://rds-contracts-ui.vercel.app/",
 		AllowMethods:     "GET,POST,OPTIONS",
 		AllowHeaders:     "Origin,Content-Type,Accept",
 		ExposeHeaders:    "Content-Length",
