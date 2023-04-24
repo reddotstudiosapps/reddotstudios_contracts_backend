@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
@@ -79,6 +80,18 @@ func main() {
 
 	// Register the logger middleware
 	app.Use(logger.New())
+
+	config := cors.Config{
+		AllowOrigins:     "http://localhost:3000",
+		AllowMethods:     "GET,POST,OPTIONS",
+		AllowHeaders:     "Origin,Content-Type,Accept",
+		ExposeHeaders:    "Content-Length",
+		AllowCredentials: true,
+		MaxAge:           3600,
+	}
+
+	// Add the CORS middleware
+	app.Use(cors.New(config))
 
 	// Define a basic GET route
 	app.Get("/", func(c *fiber.Ctx) error {
