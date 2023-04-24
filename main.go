@@ -9,54 +9,31 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/viggneshvn/reddotstudios_contracts_backend/internal/pdfcreator"
+
+	"github.com/viggneshvn/reddotstudios_contracts_backend/internal/contract"
 )
 
-type ClientDetails struct {
-	ClientName  string `json:"clientName"`
-	ClientEmail string `json:"clientEmail"`
-}
-
-type Deliverable struct {
-	Description  string `json:"description"`
-	Quantity     string `json:"quantity"`
-	Mode         string `json:"mode"`
-	DeliveryDate string `json:"deliveryDate"`
-}
-
-type EventDetails struct {
-	EventName         string `json:"eventName"`
-	EventDate         string `json:"eventDate"`
-	EventCoverageTime string `json:"eventCoverageTime"`
-	EventVenue        string `json:"eventVenue"`
-}
-
-type PaymentDetails struct {
-	TotalAmount        int64  `json:"totalAmount"`
-	AdvancePaid        int64  `json:"advancePaid,omitempty"`
-	AdvancePaymentMode string `json:"advancePaymentMode,omitempty"`
-	PerHourExtra       int64  `json:"perHourExtra"`
-}
-
-type Contract struct {
-	ClientDetails      ClientDetails  `json:"clientDetails"`
-	EventDetails       EventDetails   `json:"eventDetails"`
-	PaymentDetails     PaymentDetails `json:"paymentDetails"`
-	DeliverableDetails []Deliverable  `json:"deliverableDetails"`
-}
-
 func NewContractHandler(c *fiber.Ctx) error {
-	var contract Contract
+	var contract contract.Contract
 	if err := c.BodyParser(&contract); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Failed to parse JSON",
 		})
 	}
 
-	if err := ValidateContract(contract); err != nil {
+	if err := ValidateContract(&contract); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
+
+	_ = pdfcreator.CreateContractsPage(&contract)
+	_ = pdfcreator.CreateTermsPage(&contract)
+	log.Printf("Pdfs have been created successfully")
+
+	pdfcreator.CleanUpPdfs()
+	log.Printf("Pdfs cleaned up successfully")
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Contract created successfully",
@@ -97,7 +74,7 @@ func main() {
 	}
 }
 
-func ValidateContract(contract Contract) error {
+func ValidateContract(contract *contract.Contract) error {
 	if contract.ClientDetails.ClientName == "" {
 		return errors.New("client name is required")
 	}
