@@ -9,6 +9,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/sirupsen/logrus"
+	"github.com/viggneshvn/reddotstudios_contracts_backend/internal/gformscreator"
 	"github.com/viggneshvn/reddotstudios_contracts_backend/internal/imagecreator"
 	"github.com/viggneshvn/reddotstudios_contracts_backend/internal/pdfcreator"
 
@@ -16,6 +18,9 @@ import (
 )
 
 func NewContractHandler(c *fiber.Ctx) error {
+	logger := logrus.New()
+	logger.Info("Handling request")
+	defer logger.Info("Finished handling request")
 	var contract contract.Contract
 	if err := c.BodyParser(&contract); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -29,19 +34,61 @@ func NewContractHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	contractsFileName := pdfcreator.CreateContractsPage(&contract)
-	termsFileName := pdfcreator.CreateTermsPage(&contract)
-	log.Printf("Pdfs have been created successfully")
+	contractsFileName, err := pdfcreator.CreateContractsPage(&contract)
+	if err != nil {
+		logger.WithError(err).Errorf("failed while creating pdf for contract")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Errorf("failed while creating pdf for contract : %w", err).Error(),
+		})
+	}
 
-	imagecreator.ImageCreator(imagecreator.Contract, contractsFileName)
-	imagecreator.ImageCreator(imagecreator.Terms, termsFileName)
-	log.Printf("Images have been created successfully")
+	termsFileName, err := pdfcreator.CreateTermsPage(&contract)
+	if err != nil {
+		logger.WithError(err).Errorf("failed while creating pdf for terms")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Errorf("failed while creating pdf for terms file : %w", err).Error(),
+		})
+	}
 
-	pdfcreator.CleanUpPdfs()
-	log.Printf("Pdfs cleaned up successfully")
+	err = imagecreator.ImageCreator(imagecreator.Contract, contractsFileName)
+	if err != nil {
+		logger.WithError(err).Errorf("failed while creating an image for contracts file")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Errorf("failed while creating an image for terms file : %w", err).Error(),
+		})
+	}
 
-	imagecreator.CleanUpImages()
-	log.Printf("Images cleaned up successfully")
+	err = imagecreator.ImageCreator(imagecreator.Terms, termsFileName)
+	if err != nil {
+		logger.WithError(err).Errorf("failed while creating an image for terms file")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Errorf("failed while creating an image for terms file : %w", err).Error(),
+		})
+	}
+
+	err = pdfcreator.CleanUpPdfs()
+	if err != nil {
+		logger.WithError(err).Errorf("failed while cleaning up pdfs")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Errorf("failed while cleaning up pdfs with err : %w", err).Error(),
+		})
+	}
+
+	err = gformscreator.CreateGoogleForm(&contract)
+	if err != nil {
+		logger.WithError(err).Errorf("failed while creating google form")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Errorf("failed while creating google form with err : %w", err).Error(),
+		})
+	}
+
+	err = imagecreator.CleanUpImages()
+	if err != nil {
+		logger.WithError(err).Errorf("failed while cleaning up images")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Errorf("failed while cleaning up images with err : %w", err).Error(),
+		})
+	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Contract created successfully",

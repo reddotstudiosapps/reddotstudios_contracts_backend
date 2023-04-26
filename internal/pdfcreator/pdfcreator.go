@@ -16,7 +16,7 @@ type Pdf struct {
 	pdf.Maroto
 }
 
-func CreateContractsPage(details *contract.Contract) string {
+func CreateContractsPage(details *contract.Contract) (*string, error) {
 	contractsPage := pdf.NewMarotoCustomSize(consts.Portrait, "Letter", "mm", 215.9, 210.0)
 
 	contractsPage.SetBorder(true)
@@ -317,22 +317,20 @@ func CreateContractsPage(details *contract.Contract) string {
 	if os.IsNotExist(err) {
 		err := os.Mkdir(subDir, 0755)
 		if err != nil {
-			fmt.Println("Could not create contracts directory:", err)
-			os.Exit(1)
+			return nil, fmt.Errorf("could not create contracts directory with error : %w", err)
 		}
 	}
 
 	fileName := fmt.Sprintf("contracts/contract-specifics-%s-%s", strings.ReplaceAll(details.EventDetails.EventName, " ", "_"), strings.ReplaceAll(details.ClientDetails.ClientName, " ", "_"))
 	err = contractsPage.OutputFileAndClose(fileName + ".pdf")
 	if err != nil {
-		fmt.Println("Could not save PDF:", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("could not save pdf file with error : %w", err)
 	}
 
-	return fileName
+	return &fileName, nil
 }
 
-func CreateTermsPage(details *contract.Contract) string {
+func CreateTermsPage(details *contract.Contract) (*string, error) {
 	termsPage := pdf.NewMarotoCustomSize(consts.Portrait, "Letter", "mm", 215.9, 138.0)
 	termsPage.SetPageMargins(2, 3, 5)
 
@@ -437,8 +435,7 @@ func CreateTermsPage(details *contract.Contract) string {
 	if os.IsNotExist(err) {
 		err := os.Mkdir(subDir, 0755)
 		if err != nil {
-			fmt.Println("Could not create contracts directory:", err)
-			os.Exit(1)
+			return nil, fmt.Errorf("could not create contracts directory with error : %w", err)
 		}
 	}
 
@@ -446,16 +443,16 @@ func CreateTermsPage(details *contract.Contract) string {
 	// pdfName := fmt.Sprintf("contacts/contract-%s-%s.pdf", strings.ReplaceAll("House Warming", " ", "_"), strings.ReplaceAll("Sainath", " ", "_"))
 	err = termsPage.OutputFileAndClose(fileNameT + ".pdf")
 	if err != nil {
-		fmt.Println("Could not save PDF:", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("could not save pdf file with error : %w", err)
 	}
 
-	return fileNameT
+	return &fileNameT, nil
 }
 
-func CleanUpPdfs() {
+func CleanUpPdfs() error {
 	err := os.RemoveAll("contracts")
 	if err != nil {
-		fmt.Println(err)
+		return fmt.Errorf("failure while cleaning up pdfs from contracts directory with err : %w", err)
 	}
+	return nil
 }
