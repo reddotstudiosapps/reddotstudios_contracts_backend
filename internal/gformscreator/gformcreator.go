@@ -27,7 +27,7 @@ type FormsService struct {
 func NewFormsService() (*FormsService, error) {
 	// Load the service account credentials from the JSON file.
 	ctx := context.Background()
-	sa := option.WithCredentialsFile("etc/secrets/credentials.json")
+	sa := option.WithCredentialsFile("/etc/secrets/credentials.json")
 
 	formsService, err := forms.NewService(ctx, sa)
 	if err != nil {
@@ -40,7 +40,7 @@ func NewFormsService() (*FormsService, error) {
 func NewDriveService() (*DriveService, error) {
 	// Load the service account credentials from the JSON file.
 	ctx := context.Background()
-	sa := option.WithCredentialsFile("etc/secrets/credentials.json")
+	sa := option.WithCredentialsFile("/etc/secrets/credentials.json")
 
 	driveService, err := drive.NewService(ctx, sa)
 	if err != nil {
