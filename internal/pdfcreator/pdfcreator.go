@@ -17,7 +17,8 @@ type Pdf struct {
 }
 
 func CreateContractsPage(details *contract.Contract) (*string, error) {
-	contractsPage := pdf.NewMarotoCustomSize(consts.Portrait, "Letter", "mm", 215.9, 210.0)
+	pageLen := 150.0 + len(details.DeliverableDetails)*20.0
+	contractsPage := pdf.NewMarotoCustomSize(consts.Portrait, "Letter", "mm", 215.9, float64(pageLen))
 
 	contractsPage.SetBorder(true)
 
