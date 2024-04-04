@@ -232,7 +232,7 @@ func CreateContractsPage(details *contract.Contract) (*string, error) {
 			contractsPage.Text(fmt.Sprintf("$%d", bookingFeeToBePaid), props.Text{Top: 2, Align: consts.Center})
 		})
 		contractsPage.Col(3, func() {
-			contractsPage.Text("Venmo - @reddot_studios", props.Text{Top: 0.5, Align: consts.Center})
+			//contractsPage.Text("Venmo - @reddot_studios", props.Text{Top: 0.5, Align: consts.Center})
 			contractsPage.Text("Zelle - 774-448-8352", props.Text{Top: 4, Align: consts.Center})
 		})
 		contractsPage.Col(2, func() {
